@@ -1,26 +1,32 @@
-from dataclasses import dataclass
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 
 from . import db
 
 
 class Book(db.Model):
     id = Column("id", Integer, primary_key=True)
+
     title = Column(String(100), nullable=False)
+    acquired = Column(Boolean, nullable=False)
+    published_year = Column(String(4), nullable=False)
 
-    def __init__(self, title):
-        self.title = title
-
-    # def __str__(self):
-    #     return f"Book({self.title})"
-    #
-    # def __eq__(self, other):
-    #     if isinstance(self, other.__class__):
-    #         return self.title == other.title
-    #     else:
-    #         return False
+    authors = db.relationship('Author', backref='book')
 
     def to_json(self):
+        authors = [author.to_string() for author in self.authors]
         return {
-            "title": self.title
+            "id": self.id,
+            "title": self.title,
+            "authors": authors,
+            "acquired": self.acquired,
+            "published_year": self.published_year
         }
+
+
+class Author(db.Model):
+    id = Column("id", Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    book_id = Column(Integer, ForeignKey('book.id'))
+
+    def to_string(self):
+        return self.name

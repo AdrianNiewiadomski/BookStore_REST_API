@@ -1,19 +1,35 @@
 from flask import request, jsonify, make_response
 
 from app import app, db
-from app.model import Book
+from app.model import Book, Author
 
 
 def initialize_database():
     db.drop_all()
     db.create_all()
 
-    book = Book("Hobbit czyli Tam i z powrotem")
-    insert_book(book)
+    book1 = Book(title="Hobbit czyli Tam i z powrotem",
+                 acquired=False,
+                 published_year="2004")
+    insert_record(book1)
+
+    author1 = Author(name="J. R. R. Tolkien", book=book1)
+    insert_record(author1)
+
+    book2 = Book(title="A Middle English Reader",
+                 acquired=False,
+                 published_year="2005")
+    insert_record(book2)
+
+    author2 = Author(name="J. R. R. Tolkien", book=book2)
+    insert_record(author2)
+
+    author3 = Author(name="Kenneth Sisam", book=book2)
+    insert_record(author3)
 
 
-def insert_book(book):
-    db.session.add(book)
+def insert_record(record):
+    db.session.add(record)
     db.session.commit()
 
 
