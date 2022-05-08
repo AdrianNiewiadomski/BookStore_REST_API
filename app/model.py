@@ -4,7 +4,7 @@ from . import db
 
 
 class Book(db.Model):
-    id = Column("id", Integer, primary_key=True)
+    book_id = Column(Integer, primary_key=True)
 
     title = Column(String(100), nullable=False)
     acquired = Column(Boolean, nullable=False)
@@ -15,7 +15,7 @@ class Book(db.Model):
     def to_json(self):
         authors = [author.to_string() for author in self.authors]
         return {
-            "id": self.id,
+            "id": self.book_id,
             "title": self.title,
             "authors": authors,
             "acquired": self.acquired,
@@ -24,9 +24,9 @@ class Book(db.Model):
 
 
 class Author(db.Model):
-    id = Column("id", Integer, primary_key=True)
+    author_id = Column("id", Integer, primary_key=True)
     name = Column(String(100), nullable=False)
-    book_id = Column(Integer, ForeignKey('book.id'))
+    book_id = Column(Integer, ForeignKey('book.book_id'))
 
     def to_string(self):
         return self.name
