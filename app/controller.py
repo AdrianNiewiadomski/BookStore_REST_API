@@ -50,5 +50,10 @@ class Controller:
         return book.to_dict()
 
     def update_book_by_id(self, book_id):
-        ORM.update_book(book_id, self.body)
+        ORM.update_book_by_id(book_id, self.body)
         return self.get_book_by_id_response(book_id)
+
+    @staticmethod
+    def delete_book_by_id(book_id):
+        ORM.delete_book_by_id(book_id)
+        return '', 204

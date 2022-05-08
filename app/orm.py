@@ -55,6 +55,11 @@ class ORM:
         return Author.query.filter(Author.name.ilike(f"%{author_name}%")).all()
 
     @staticmethod
-    def update_book(book_id, new_values):
+    def update_book_by_id(book_id, new_values):
         Book.query.filter_by(id=book_id).update(new_values)
+        db.session.commit()
+
+    @staticmethod
+    def delete_book_by_id(book_id):
+        Book.query.filter_by(id=book_id).delete()
         db.session.commit()
