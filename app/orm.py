@@ -40,7 +40,7 @@ class ORM:
     def get_filtered_books(title, book_ids, earlier_date, later_date, acquired):
         return Book.query \
             .filter(Book.title.ilike(f"%{title}%")) \
-            .filter(Book.book_id.in_(book_ids)) \
+            .filter(Book.id.in_(book_ids)) \
             .filter(Book.published_year >= earlier_date) \
             .filter(Book.published_year <= later_date) \
             .filter(Book.acquired.in_(acquired)) \
@@ -48,8 +48,13 @@ class ORM:
 
     @staticmethod
     def get_book_by_id(book_id):
-        return Book.query.filter_by(book_id=book_id).first()
+        return Book.query.filter_by(id=book_id).first()
 
     @staticmethod
     def get_authors_by_name(author_name):
         return Author.query.filter(Author.name.ilike(f"%{author_name}%")).all()
+
+    @staticmethod
+    def update_book(book_id, new_values):
+        Book.query.filter_by(id=book_id).update(new_values)
+        db.session.commit()

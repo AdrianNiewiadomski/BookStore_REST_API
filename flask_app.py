@@ -15,6 +15,11 @@ def get_book_by_id(book_id: int):
     return Controller.get_book_by_id_response(book_id)
 
 
+@app.route("/books/<int:book_id>", methods=["PATCH"])
+def update_book_by_id(book_id: int):
+    return Controller(request).update_book_by_id(book_id)
+
+
 initialize_database()
 
 if __name__ == '__main__':

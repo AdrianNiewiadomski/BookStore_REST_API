@@ -8,6 +8,7 @@ from .orm import ORM
 class Controller:
     def __init__(self, request):
         self.args = request.args
+        self.body = json.loads(request.data.decode('utf8')) if request.data else None
 
     def get_books_response(self):
         if not self.args:
@@ -15,7 +16,7 @@ class Controller:
         else:
             books = self._get_filtered_books()
 
-        response = make_response(jsonify([book.to_json() for book in books]))
+        response = make_response(jsonify([book.to_dict() for book in books]))
         response.headers["Content-Type"] = "application/json"
         return response
 
@@ -46,4 +47,8 @@ class Controller:
     @staticmethod
     def get_book_by_id_response(book_id):
         book = ORM.get_book_by_id(book_id)
-        return book.to_json()
+        return book.to_dict()
+
+    def update_book_by_id(self, book_id):
+        ORM.update_book(book_id, self.body)
+        return self.get_book_by_id_response(book_id)
