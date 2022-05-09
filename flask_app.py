@@ -25,6 +25,11 @@ def delete_book_by_id(book_id: int):
     return Controller.delete_book_by_id(book_id)
 
 
+@app.route("/import", methods=["POST"])
+def import_books_by_author_name():
+    return Controller(request).import_books_by_author_name()
+
+
 initialize_database()
 
 if __name__ == '__main__':
