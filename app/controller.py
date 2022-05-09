@@ -14,7 +14,8 @@ from .orm import ORM
 class Controller:
     def __init__(self, request):
         self.args = request.args
-        self.body = json.loads(request.data.decode('utf8')) if request.data else None
+        self.body = json.loads(
+            request.data.decode('utf8')) if request.data else None
 
     def get_books_response(self) -> Response:
         if not self.args:
@@ -22,11 +23,14 @@ class Controller:
         else:
             books = self._get_filtered_books()
 
-        return Controller._get_response([book.to_dict() for book in books], 200)
+        return Controller._get_response([book.to_dict() for book in books],
+                                        200)
 
     def _get_filtered_books(self) -> List[Book]:
-        title, book_ids, earlier_date, later_date, acquired = self._extract_arguments()
-        return ORM.get_filtered_books(title, book_ids, earlier_date, later_date, acquired)
+        title, book_ids, earlier_date, later_date, acquired \
+            = self._extract_arguments()
+        return ORM.get_filtered_books(title, book_ids, earlier_date,
+                                      later_date, acquired)
 
     def _extract_arguments(self) -> tuple:
         title = self.args.get("title", "").replace("\"", "")
@@ -49,7 +53,8 @@ class Controller:
             return True, False
 
     @staticmethod
-    def _get_response(response_data: Union[dict, list], status_code: int) -> Response:
+    def _get_response(response_data: Union[dict, list], status_code: int) -> \
+            Response:
         response = make_response(jsonify(response_data), status_code)
         response.headers["Content-Type"] = "application/json"
         return response
@@ -60,7 +65,10 @@ class Controller:
         if book:
             return book.all_data_to_dict()
 
-        return Controller._get_response({"error_description": "The requested resource could not be found."}, 404)
+        return Controller._get_response(
+            {"error_description":
+             "The requested resource could not be found."},
+            404)
 
     def update_book_by_id(self, book_id: int) -> Union[dict, Response]:
         ORM.update_book_by_id(book_id, self.body)
@@ -73,7 +81,10 @@ class Controller:
 
     def import_books_by_author_name(self) -> Union[dict, Response]:
         author = self.body["author"]
-        result = requests.get(f"https://www.googleapis.com/books/v1/volumes?q=inauthor:'{author}'")
+        result = requests.get(
+            "https://www.googleapis.com/books/v1/volumes?q=inauthor:'{}'"
+            .format(author)
+        )
 
         if result.ok:
             imported_books = result.json()["items"]
@@ -81,22 +92,31 @@ class Controller:
             number_of_imported_books = 0
             try:
                 for imported_book in imported_books:
-                    number_of_imported_books = Controller._process_imported_book(imported_book,
-                                                                                 number_of_imported_books)
+                    number_of_imported_books = Controller \
+                        ._process_imported_book(imported_book,
+                                                number_of_imported_books)
                 return {"imported": number_of_imported_books}
             except KeyError:
                 return Controller._get_response(
-                    {"error_description": "The response does not have the required fields."}, 404)
+                    {"error_description":
+                     "The response does not have the required fields."},
+                    404)
         else:
-            return Controller._get_response({"error_description": "The required resource cannot be found."}, 404)
+            return Controller._get_response(
+                {"error_description":
+                 "The required resource cannot be found."},
+                404)
 
     @staticmethod
-    def _process_imported_book(imported_book: dict, number_of_imported_books: int) -> int:
+    def _process_imported_book(imported_book: dict,
+                               number_of_imported_books: int) -> int:
         imported_values = Controller._get_book_details(imported_book)
 
-        old_book = ORM.get_filtered_books_by_external_id(imported_values["external_id"])
+        old_book = ORM.get_filtered_books_by_external_id(
+            imported_values["external_id"])
         if old_book:
-            Controller._update_imported_book(old_book, imported_values, imported_book)
+            Controller._update_imported_book(old_book, imported_values,
+                                             imported_book)
         else:
             Controller._insert_imported_book(imported_book, imported_values)
 
@@ -113,10 +133,12 @@ class Controller:
             published_year = published_date
         external_id = imported_book["id"]
         thumbnail = imported_book["accessInfo"]["webReaderLink"]
-        return {"title": title, "published_year": published_year, "external_id": external_id, "thumbnail": thumbnail}
+        return {"title": title, "published_year": published_year,
+                "external_id": external_id, "thumbnail": thumbnail}
 
     @staticmethod
-    def _update_imported_book(old_book: Book, imported_values: dict, imported_book: dict) -> None:
+    def _update_imported_book(old_book: Book, imported_values: dict,
+                              imported_book: dict) -> None:
         ORM.update_book_by_id(old_book.id, imported_values)
         old_authors = ORM.get_authors_by_book_id(old_book.id)
         new_authors = imported_book["volumeInfo"]["authors"]
@@ -137,7 +159,8 @@ class Controller:
         insert_authors(authors_to_be_updated, new_authors, old_book)
 
     @staticmethod
-    def _insert_imported_book(imported_book: dict, imported_values: dict) -> None:
+    def _insert_imported_book(imported_book: dict,
+                              imported_values: dict) -> None:
         book = ORM.create_book(**imported_values, acquired=False)
         authors = imported_book["volumeInfo"]["authors"]
 

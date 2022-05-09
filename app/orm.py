@@ -8,7 +8,8 @@ def initialize_database() -> None:
     db.drop_all()
     db.create_all()
 
-    book1 = ORM.create_book("Hobbit czyli Tam i z powrotem", "2004", "LLSpngEACAAJ")
+    book1 = ORM.create_book("Hobbit czyli Tam i z powrotem", "2004",
+                            "LLSpngEACAAJ")
     ORM.create_author(name="Tolkien", book=book1)
     ORM.create_author(name="Kenneth Sisam", book=book1)
     ORM.create_author(name="Niewiadomski", book=book1)
@@ -19,9 +20,10 @@ def initialize_database() -> None:
 
 class ORM:
     @staticmethod
-    def create_book(title: str, published_year: str, external_id: str, acquired: bool = False, thumbnail: str = "") \
-            -> Book:
-        book = Book(external_id=external_id, title=title, published_year=published_year, acquired=acquired,
+    def create_book(title: str, published_year: str, external_id: str,
+                    acquired: bool = False, thumbnail: str = "") -> Book:
+        book = Book(external_id=external_id, title=title,
+                    published_year=published_year, acquired=acquired,
                     thumbnail=thumbnail)
         ORM.insert_record(book)
         return book
@@ -41,7 +43,8 @@ class ORM:
         return Book.query.all()
 
     @staticmethod
-    def get_filtered_books(title: str, book_ids: List[int], earlier_date: str, later_date: str, acquired: Tuple[bool]) \
+    def get_filtered_books(title: str, book_ids: List[int], earlier_date: str,
+                           later_date: str, acquired: Tuple[bool]) \
             -> List[Book]:
         return Book.query \
             .filter(Book.title.ilike(f"%{title}%")) \
@@ -56,7 +59,8 @@ class ORM:
         return Book.query.filter_by(id=book_id).first()
 
     @staticmethod
-    def get_filtered_books_by_external_id(external_id: str) -> Union[None, Book]:
+    def get_filtered_books_by_external_id(external_id: str) \
+            -> Union[None, Book]:
         return Book.query.filter_by(external_id=external_id).first()
 
     @staticmethod
@@ -74,7 +78,8 @@ class ORM:
 
     @staticmethod
     def update_author(old_author: Author, new_values: dict) -> None:
-        Author.query.filter(Author.author_id == old_author.author_id).update(new_values)
+        Author.query.filter(Author.author_id == old_author.author_id)\
+            .update(new_values)
         db.session.commit()
 
     @staticmethod
