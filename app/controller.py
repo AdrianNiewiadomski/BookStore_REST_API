@@ -6,7 +6,6 @@ from typing import Union
 import requests
 from flask import make_response, jsonify, Response
 
-from .decorator import loop_through_authors
 from .model import Book
 from .orm import ORM
 
@@ -48,7 +47,7 @@ class Controller:
 
     def _get_acquired_state(self) -> tuple:
         if self.args.get("acquired"):
-            return (json.loads(self.args.get("acquired")),)
+            return json.loads(self.args.get("acquired")),
         else:
             return True, False
 
@@ -88,7 +87,6 @@ class Controller:
 
         if result.ok:
             imported_books = result.json()["items"]
-
             number_of_imported_books = 0
             try:
                 for imported_book in imported_books:
@@ -111,7 +109,6 @@ class Controller:
     def _process_imported_book(imported_book: dict,
                                number_of_imported_books: int) -> int:
         imported_values = Controller._get_book_details(imported_book)
-
         old_book = ORM.get_filtered_books_by_external_id(
             imported_values["external_id"])
         if old_book:
@@ -147,16 +144,24 @@ class Controller:
         for old, new in authors_to_be_updated:
             ORM.update_author(old, {"name": new})
 
-        @loop_through_authors
-        def delete_authors(args):
-            ORM.delete_author_by_id(args[0].author_id)
+        if len(old_authors) == len(new_authors):
+            return
+        elif len(old_authors) > len(new_authors):
+            Controller.modify_authors(len(new_authors),
+                                      ORM.delete_author_by_id, old_authors)
+        elif len(old_authors) < len(new_authors):
+            Controller.modify_authors(len(old_authors), ORM.create_author,
+                                      new_authors, old_book)
 
-        @loop_through_authors
-        def insert_authors(args):
-            ORM.create_author(args[0], args[1])
+    @staticmethod
+    def modify_authors(index, func, authors_to_be_modified, old_book=None):
+        while index < len(authors_to_be_modified):
+            arguments = [authors_to_be_modified[index]]
+            if old_book:
+                arguments.append(old_book)
 
-        delete_authors(authors_to_be_updated, old_authors)
-        insert_authors(authors_to_be_updated, new_authors, old_book)
+            func(*arguments)
+            index += 1
 
     @staticmethod
     def _insert_imported_book(imported_book: dict,

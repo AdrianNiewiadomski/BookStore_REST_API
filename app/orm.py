@@ -14,7 +14,8 @@ def initialize_database() -> None:
     ORM.create_author(name="Kenneth Sisam", book=book1)
     ORM.create_author(name="Niewiadomski", book=book1)
 
-    book2 = ORM.create_book("A Middle English Reader", "2005", "X78hLLg6__8C")
+    book2 = ORM.create_book("Letters From Father Christmas", "2005",
+                            "7L_ra-0NDvMC")
     ORM.create_author(name="J. R. R. Tolkien", book=book2)
 
 
@@ -88,6 +89,6 @@ class ORM:
         db.session.commit()
 
     @staticmethod
-    def delete_author_by_id(author_id: Author) -> None:
-        Author.query.filter_by(author_id=author_id).delete()
+    def delete_author_by_id(author: Author) -> None:
+        Author.query.filter_by(author_id=author.author_id).delete()
         db.session.commit()
